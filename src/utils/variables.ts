@@ -1,3 +1,17 @@
-const { env } = process as { env: { [key: string]: string } };
+const { env } = process;
 
-export const MONGO_URI = env.MONGO_URI;
+// List all the environment variables you want to export
+const ENV_KEYS = [
+  "MONGO_URI",
+  "PORT",
+  "MAILTRAP_USER",
+  "MAILTRAP_PASSWORD",
+  "SERVER_AUTH_EMAIL",
+] as const;
+
+type EnvRecord = Record<(typeof ENV_KEYS)[number], string>;
+
+// Dynamically construct an object from the environment variables
+export const config: EnvRecord = Object.fromEntries(
+  ENV_KEYS.map((key) => [key, env[key]])
+) as EnvRecord;

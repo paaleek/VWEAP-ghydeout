@@ -15,9 +15,8 @@ export const CreateUserValidationSchema = yup.object({
     .string()
     .trim()
     .required("Password is required parameter")
-    .min(8, "Password is too short")
-    .matches(
+    .min(8, "Password is too short") /* .matches(
       /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#\$%\^&\*])[a-zA-Z\d!@#\$%\^&\*]+$/,
       "Password is too simple!"
-    ),
+    ),*/,
 });

@@ -1,7 +1,7 @@
 import { create } from "#/controllers/user";
 import { validate } from "#/middleware/validator";
 
-import { CreateUserValidationSchema } from "#/utils/validationSchemas";
+import { CreateUserValidationSchema } from "#/utils/validation/validationSchemas";
 import { Router } from "express";
 
 const router = Router();

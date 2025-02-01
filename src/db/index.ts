@@ -1,8 +1,8 @@
-import { MONGO_URI } from "#/utils/variables";
+import { config } from "#/utils/variables";
 import mongoose from "mongoose";
 
 mongoose
-  .connect(MONGO_URI)
+  .connect(config.MONGO_URI)
   .then(() => {
     console.log("db is connected");
   })
