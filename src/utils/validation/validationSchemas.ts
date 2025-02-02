@@ -1,4 +1,22 @@
 import * as yup from "yup";
+import { isValidObjectId } from "mongoose";
+
+declare module "yup" {
+  interface StringSchema {
+    isValidObjectId(message?: string): this;
+  }
+}
+
+yup.addMethod(yup.string, "isValidObjectId", function (errorMessage) {
+  return this.test(`test-objectId-validity`, errorMessage, function (value) {
+    const { path, createError } = this;
+
+    if (!value || !isValidObjectId(value)) {
+      return createError({ path, message: errorMessage });
+    }
+    return true;
+  });
+});
 
 export const CreateUserValidationSchema = yup.object({
   name: yup
@@ -19,4 +37,19 @@ export const CreateUserValidationSchema = yup.object({
       /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#\$%\^&\*])[a-zA-Z\d!@#\$%\^&\*]+$/,
       "Password is too simple!"
     ),*/,
+});
+
+export const VerificationEmailBodySchema = yup.object({
+  token: yup.string().trim().required("Token is required field."),
+  userId: yup
+    .string()
+    .required("userId is required field")
+    .isValidObjectId("userId is not a valid ObjectId"),
+});
+
+export const SendnEmailVerificationAgainBodySchema = yup.object({
+  userId: yup
+    .string()
+    .required("userId is required field")
+    .isValidObjectId("userId is not a valid ObjectId"),
 });

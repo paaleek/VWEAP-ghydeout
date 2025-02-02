@@ -13,7 +13,16 @@ export const create: RequestHandler = async (req: CreateUser, res) => {
   //send verification email
   const token = generateToken(10);
 
-  sendVerificationMail(token, { name, email, userId: user._id.toString() }); //here can be wait for sending email
+  //create token in DB
+  await EmailVerificationToken.create({
+    owner: user._id,
+    token: token,
+  });
+
+  sendVerificationMail(token, {
+    name: user.name,
+    email: user.email,
+  }); //here can be wait for sending email
 
   res.status(201).json({ user: { id: user._id, name, email } });
 };
@@ -44,4 +53,49 @@ export const verifyEmail: RequestHandler = async (
   await EmailVerificationToken.findByIdAndDelete(verificationToken._id);
 
   res.status(200).json({ message: "Email verified successfully." });
+};
+
+export const sendNewEmailVerificationToken: RequestHandler = async (
+  req,
+  res
+) => {
+  const { userId } = req.body;
+
+  //find user by Id
+  const user = await User.findById(userId);
+
+  if (!user) {
+    res.status(400).json({ message: "User with given userId does not exists" });
+    return;
+  }
+
+  if (user.verified) {
+    res.status(405).json({
+      message:
+        "User with given userId already does have verified email address.",
+    });
+    return;
+  }
+
+  await EmailVerificationToken.deleteMany({
+    owner: userId,
+  });
+
+  //generate new token
+  const token = generateToken(10);
+
+  //create token in DB
+  await EmailVerificationToken.create({
+    owner: userId,
+    token: token,
+  });
+
+  sendVerificationMail(token, {
+    name: user.name,
+    email: user.email,
+  });
+
+  res.status(201).json({
+    message: "New email has been sent, please check your email inbox.",
+  });
 };

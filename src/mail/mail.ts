@@ -1,7 +1,6 @@
 import nodemailer from "nodemailer";
 import path from "path";
 
-import EmailVerificationToken from "#/models/emailVerificationToken";
 import { config } from "#/utils/variables";
 import { generateTemplate } from "#/mail/template";
 
@@ -20,18 +19,12 @@ const getMailTransporter = () => {
 interface Profile {
   name: string;
   email: string;
-  userId: string;
 }
 
 export const sendVerificationMail = async (token: string, profile: Profile) => {
   const transport = getMailTransporter();
 
-  const { name, email, userId } = profile;
-
-  const verificationToken = await EmailVerificationToken.create({
-    owner: userId,
-    token: token,
-  });
+  const { name, email } = profile;
 
   const welcomeMessage = `Ahoj ${name}, vitaj v BZZVÁHY. Klikni na tlačidlo a over svoj email.`;
 
