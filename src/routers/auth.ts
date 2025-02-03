@@ -1,5 +1,6 @@
 import {
   create,
+  generateForgotPasswordLink,
   sendNewEmailVerificationToken,
   verifyEmail,
 } from "#/controllers/user";
@@ -25,5 +26,6 @@ router.post(
   validate(SendnEmailVerificationAgainBodySchema),
   sendNewEmailVerificationToken
 );
+router.post("/forgot-password", generateForgotPasswordLink);
 
 export default router;

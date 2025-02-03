@@ -99,3 +99,17 @@ export const sendNewEmailVerificationToken: RequestHandler = async (
     message: "New email has been sent, please check your email inbox.",
   });
 };
+
+export const generateForgotPasswordLink: RequestHandler = async (req, res) => {
+  const { email } = req.body;
+
+  //find user by email
+  const user = await User.findOne({ email: email });
+
+  if (!user) {
+    res.status(404).json({ message: "User with given email does not exists" });
+    return;
+  }
+
+  //generate link
+};
