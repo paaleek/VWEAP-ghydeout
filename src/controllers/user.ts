@@ -133,3 +133,24 @@ export const generateForgotPasswordLink: RequestHandler = async (req, res) => {
 
   res.status(200).json({ message: "Passrod reset link has been sent." });
 };
+
+export const isValidPasswordResetToken: RequestHandler = async (req, res) => {
+  const { token, userId } = req.body;
+
+  const resetToken = await PasswordResetToken.findOne({ owner: userId });
+
+  if (!resetToken) {
+    res
+      .status(404)
+      .json({ error: "Reset token for given userId was not found." });
+    return;
+  }
+
+  const matched = await resetToken.compareToken(token);
+  if (!matched) {
+    res.status(403).json({ error: "Unauthorized access, invalid token!" });
+    return;
+  }
+
+  res.status(200).json({ message: "Your token is valid" });
+};

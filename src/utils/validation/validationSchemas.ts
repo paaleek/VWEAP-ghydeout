@@ -39,7 +39,7 @@ export const CreateUserValidationSchema = yup.object({
     ),*/,
 });
 
-export const VerificationEmailBodySchema = yup.object({
+export const TokenAndObjectIdValidationSchema = yup.object({
   token: yup.string().trim().required("Token is required field."),
   userId: yup
     .string()
@@ -47,7 +47,7 @@ export const VerificationEmailBodySchema = yup.object({
     .isValidObjectId("userId is not a valid ObjectId"),
 });
 
-export const SendnEmailVerificationAgainBodySchema = yup.object({
+export const ObjectIdValidationSchema = yup.object({
   userId: yup
     .string()
     .required("userId is required field")
