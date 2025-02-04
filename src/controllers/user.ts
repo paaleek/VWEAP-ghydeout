@@ -3,8 +3,11 @@ import { RequestHandler } from "express";
 import { CreateUser, VerifyEmailRequest } from "#/@types/user";
 import User from "#/models/user";
 import { generateToken } from "#/utils/helper";
-import { sendVerificationMail } from "#/mail/mail";
+import { sendForgotPasswordLink, sendVerificationMail } from "#/mail/mail";
 import EmailVerificationToken from "#/models/emailVerificationToken";
+import PasswordResetToken from "#/models/passwordResetToken";
+import crypto from "crypto";
+import { config } from "#/utils/variables";
 
 export const create: RequestHandler = async (req: CreateUser, res) => {
   const { email, password, name } = req.body;
@@ -106,10 +109,27 @@ export const generateForgotPasswordLink: RequestHandler = async (req, res) => {
   //find user by email
   const user = await User.findOne({ email: email });
 
+  //raise exception if user with given email does not exists
   if (!user) {
     res.status(404).json({ message: "User with given email does not exists" });
     return;
   }
 
-  //generate link
+  //delete any previously created reset tokens
+  await PasswordResetToken.deleteMany({
+    owner: user._id,
+  });
+
+  const token = crypto.randomBytes(36).toString("hex");
+
+  await PasswordResetToken.create({
+    owner: user._id,
+    token: token,
+  });
+
+  const resetLink = `${config.PASSWORD_RESET_LINK}?token=${token}&userId=${user._id}`;
+
+  sendForgotPasswordLink({ email, link: resetLink });
+
+  res.status(200).json({ message: "Passrod reset link has been sent." });
 };

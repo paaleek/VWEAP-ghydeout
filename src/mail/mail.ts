@@ -31,6 +31,7 @@ export const sendVerificationMail = async (token: string, profile: Profile) => {
   transport.sendMail({
     to: email,
     from: config.SERVER_AUTH_EMAIL,
+    subject: "Uvítacia správa",
     html: generateTemplate({
       title: "Vitajte v BZZVÁHY.",
       message: welcomeMessage,
@@ -38,6 +39,45 @@ export const sendVerificationMail = async (token: string, profile: Profile) => {
       banner: "cid:welcome",
       link: "#",
       btnTitle: token,
+    }),
+    attachments: [
+      {
+        filename: "logo.png",
+        path: path.join(__dirname, "../mail/assets/logo.png"),
+        cid: "logo",
+      },
+      {
+        filename: "password_reset.png",
+        path: path.join(__dirname, "../mail/assets/password_reset.png"),
+        cid: "welcome",
+      },
+    ],
+  });
+};
+
+interface Options {
+  email: string;
+  link: string;
+}
+
+export const sendForgotPasswordLink = async (options: Options) => {
+  const transport = getMailTransporter();
+
+  const { email, link } = options;
+
+  const message = `Práve sme obdržali požiadavku na zmenu vášho hesla. Žiaden problém, klikni na link nižšie a vytvor si nové heslo.`;
+
+  transport.sendMail({
+    to: email,
+    from: config.SERVER_AUTH_EMAIL,
+    subject: "Link na obnovu hesla",
+    html: generateTemplate({
+      title: "Obnova hesla",
+      message: message,
+      logo: "cid:logo",
+      banner: "cid:welcome",
+      link: link,
+      btnTitle: "Zmeniť heslo",
     }),
     attachments: [
       {
