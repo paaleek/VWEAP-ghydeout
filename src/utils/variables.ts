@@ -8,6 +8,7 @@ const ENV_KEYS = [
   "MAILTRAP_PASSWORD",
   "SERVER_AUTH_EMAIL",
   "PASSWORD_RESET_LINK",
+  "SIGN_IN_URL",
 ] as const;
 
 type EnvRecord = Record<(typeof ENV_KEYS)[number], string>;

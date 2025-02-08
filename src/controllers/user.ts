@@ -3,7 +3,11 @@ import { RequestHandler } from "express";
 import { CreateUser, VerifyEmailRequest } from "#/@types/user";
 import User from "#/models/user";
 import { generateToken } from "#/utils/helper";
-import { sendForgotPasswordLink, sendVerificationMail } from "#/mail/mail";
+import {
+  sendForgotPasswordLink,
+  sendPasswordResetSuccessEmail,
+  sendVerificationMail,
+} from "#/mail/mail";
 import EmailVerificationToken from "#/models/emailVerificationToken";
 import PasswordResetToken from "#/models/passwordResetToken";
 import crypto from "crypto";
@@ -131,26 +135,37 @@ export const generateForgotPasswordLink: RequestHandler = async (req, res) => {
 
   sendForgotPasswordLink({ email, link: resetLink });
 
-  res.status(200).json({ message: "Passrod reset link has been sent." });
+  res.status(200).json({ message: "Password reset link has been sent." });
 };
 
-export const isValidPasswordResetToken: RequestHandler = async (req, res) => {
-  const { token, userId } = req.body;
+export const grandValid: RequestHandler = (req, res) => {
+  res.json({ valid: true });
+};
 
-  const resetToken = await PasswordResetToken.findOne({ owner: userId });
+export const updatePassword: RequestHandler = async (req, res) => {
+  const { password, userId } = req.body;
 
-  if (!resetToken) {
+  const user = await User.findById(userId);
+  if (!user) {
+    res.status(403).json({ error: "Unauthorized access!" });
+    return;
+  }
+
+  const matched = await user.comparePassword(password);
+  if (matched) {
     res
-      .status(404)
-      .json({ error: "Reset token for given userId was not found." });
+      .status(422)
+      .json({ error: "New password must be different to the old one!" });
     return;
   }
 
-  const matched = await resetToken.compareToken(token);
-  if (!matched) {
-    res.status(403).json({ error: "Unauthorized access, invalid token!" });
-    return;
-  }
+  user.password = password;
+  await user.save();
 
-  res.status(200).json({ message: "Your token is valid" });
+  await PasswordResetToken.deleteMany({ owner: user._id });
+
+  //send success email
+  sendPasswordResetSuccessEmail(user.name, user.email);
+
+  res.status(200).json({ message: "Password reset succeessfully." });
 };

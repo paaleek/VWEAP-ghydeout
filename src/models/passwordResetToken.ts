@@ -28,20 +28,25 @@ const passwordResetTokenSchema = new Schema<
   createdAt: {
     type: Date,
     expires: 3600, // expires in one hour 60 min * 60s
-    default: Date.now(),
+    default: Date.now,
   },
 });
 
 passwordResetTokenSchema.pre("save", async function (next) {
   //hash the token before saving to the database
   if (this.isModified("token")) {
+    console.log("Before hashing:", this.token);
     this.token = await hash(this.token, 10);
+    console.log("After hashing:", this.token);
   }
   next();
 });
 
 passwordResetTokenSchema.methods.compareToken = async function (token) {
+  console.log("Raw token:", token);
+  console.log("Hashed token from DB:", this.token);
   const equals = await compare(token, this.token);
+  console.log("Comparison result:", equals);
   return equals;
 };
 

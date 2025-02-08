@@ -93,3 +93,38 @@ export const sendForgotPasswordLink = async (options: Options) => {
     ],
   });
 };
+
+export const sendPasswordResetSuccessEmail = async (
+  name: string,
+  email: string
+) => {
+  const transport = getMailTransporter();
+
+  const message = `Vážený ${name} práve sme aktualizovali vaše heslo. Odteraz sa môžete prihlásiť pomocou vašého nového hesla.`;
+
+  transport.sendMail({
+    to: email,
+    from: config.SERVER_AUTH_EMAIL,
+    subject: "Úspešne zmenené heslo",
+    html: generateTemplate({
+      title: "Úspešne zmenené heslo",
+      message: message,
+      logo: "cid:logo",
+      banner: "cid:welcome",
+      link: config.SIGN_IN_URL,
+      btnTitle: "Prihlásenie",
+    }),
+    attachments: [
+      {
+        filename: "logo.png",
+        path: path.join(__dirname, "../mail/assets/logo.png"),
+        cid: "logo",
+      },
+      {
+        filename: "password_reset.png",
+        path: path.join(__dirname, "../mail/assets/password_reset.png"),
+        cid: "welcome",
+      },
+    ],
+  });
+};

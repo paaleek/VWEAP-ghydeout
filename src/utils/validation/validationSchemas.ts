@@ -29,14 +29,6 @@ export const CreateUserValidationSchema = yup.object({
     .string()
     .email("Invalid email")
     .required("Email is required parameter"),
-  password: yup
-    .string()
-    .trim()
-    .required("Password is required parameter")
-    .min(8, "Password is too short") /* .matches(
-      /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#\$%\^&\*])[a-zA-Z\d!@#\$%\^&\*]+$/,
-      "Password is too simple!"
-    ),*/,
 });
 
 export const TokenAndObjectIdValidationSchema = yup.object({
@@ -52,4 +44,15 @@ export const ObjectIdValidationSchema = yup.object({
     .string()
     .required("userId is required field")
     .isValidObjectId("userId is not a valid ObjectId"),
+});
+
+export const PasswordValidationSchema = yup.object({
+  password: yup
+    .string()
+    .trim()
+    .required("Password is required parameter")
+    .min(8, "Password is too short") /* .matches(
+      /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#\$%\^&\*])[a-zA-Z\d!@#\$%\^&\*]+$/,
+      "Password is too simple!"
+    ),*/,
 });
