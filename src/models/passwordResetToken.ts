@@ -43,11 +43,19 @@ passwordResetTokenSchema.pre("save", async function (next) {
 });
 
 passwordResetTokenSchema.methods.compareToken = async function (token) {
-  console.log("Raw token:", token);
-  console.log("Hashed token from DB:", this.token);
-  const equals = await compare(token, this.token);
-  console.log("Comparison result:", equals);
-  return equals;
+  console.log("Raw token from request:", token);
+  console.log("Hashed token in DB:", this.token);
+
+  // Ensure token length matches the original length (72 characters for a 36-byte hex token)
+  if (token.length !== 72) {
+    console.log("Token length mismatch. Rejecting.");
+    return false;
+  }
+
+  const isValid = await compare(token, this.token);
+  console.log("Comparison result:", isValid);
+
+  return isValid;
 };
 
 export default model("PasswordResetToken", passwordResetTokenSchema) as Model<
