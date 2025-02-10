@@ -9,6 +9,7 @@ const ENV_KEYS = [
   "SERVER_AUTH_EMAIL",
   "PASSWORD_RESET_LINK",
   "SIGN_IN_URL",
+  "JWT_SECRET",
 ] as const;
 
 type EnvRecord = Record<(typeof ENV_KEYS)[number], string>;

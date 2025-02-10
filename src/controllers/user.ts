@@ -1,4 +1,5 @@
 import { RequestHandler } from "express";
+import jwt, { JwtPayload, verify } from "jsonwebtoken";
 
 import { CreateUser, VerifyEmailRequest } from "#/@types/user";
 import User from "#/models/user";
@@ -168,4 +169,75 @@ export const updatePassword: RequestHandler = async (req, res) => {
   sendPasswordResetSuccessEmail(user.name, user.email);
 
   res.status(200).json({ message: "Password reset succeessfully." });
+};
+
+export const signIn: RequestHandler = async (req, res) => {
+  const { password, email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    res.status(403).json({ error: "Email/Password mismatch!" });
+    return;
+  }
+
+  //comapare the pasword
+  const matched = await user.comparePassword(password);
+  if (!matched) {
+    res.status(403).json({ error: "Email/Password mismatch!" });
+    return;
+  }
+
+  //generate token for later use
+  const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, {
+    expiresIn: "5min",
+  });
+  user.tokens.push(token);
+  await user.save();
+
+  res.json({
+    profile: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      verified: user.verified,
+    },
+    token,
+  });
+};
+
+export const isAuth: RequestHandler = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      res.status(401).json({ error: "Unauthorized: No token provided" });
+      return;
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      res.status(403).json({ error: "Unauthorized request." });
+      return;
+    }
+
+    const payload = verify(token, config.JWT_SECRET) as JwtPayload;
+    const userId = payload.userId;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(403).json({ error: "Unauthorized request." });
+      return;
+    }
+
+    res.json({
+      profile: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        verified: user.verified,
+      },
+    });
+  } catch (error) {
+    res.status(401).json({ error: "Unauthorized: Invalid or expired token" });
+    return;
+  }
 };

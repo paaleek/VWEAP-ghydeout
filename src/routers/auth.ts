@@ -2,24 +2,36 @@ import {
   create,
   generateForgotPasswordLink,
   grandValid,
+  isAuth,
   sendNewEmailVerificationToken,
+  signIn,
   updatePassword,
   verifyEmail,
 } from "#/controllers/user";
 import { isValidPasswordResetToken } from "#/middleware/auth";
 import { validate } from "#/middleware/validator";
+import User from "#/models/user";
 
 import {
-  CreateUserValidationSchema,
+  EmailValidationSchema,
+  NameValidationSchema,
   ObjectIdValidationSchema,
   PasswordValidationSchema,
   TokenAndObjectIdValidationSchema,
 } from "#/utils/validation/validationSchemas";
-import { Router } from "express";
+import { config } from "#/utils/variables";
+import { Response, Router } from "express";
+import { JwtPayload, verify } from "jsonwebtoken";
 
 const router = Router();
 
-router.post("/create", validate(CreateUserValidationSchema), create);
+router.post(
+  "/create",
+  validate(NameValidationSchema),
+  validate(EmailValidationSchema),
+  validate(PasswordValidationSchema),
+  create
+);
 router.post(
   "/verify-email",
   validate(PasswordValidationSchema),
@@ -46,5 +58,14 @@ router.post(
   isValidPasswordResetToken,
   updatePassword
 );
+
+router.post(
+  "/sign-in",
+  validate(PasswordValidationSchema),
+  validate(EmailValidationSchema),
+  signIn
+);
+
+router.get("/is-auth", isAuth);
 
 export default router;

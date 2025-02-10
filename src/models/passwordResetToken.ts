@@ -35,17 +35,12 @@ const passwordResetTokenSchema = new Schema<
 passwordResetTokenSchema.pre("save", async function (next) {
   //hash the token before saving to the database
   if (this.isModified("token")) {
-    console.log("Before hashing:", this.token);
     this.token = await hash(this.token, 10);
-    console.log("After hashing:", this.token);
   }
   next();
 });
 
 passwordResetTokenSchema.methods.compareToken = async function (token) {
-  console.log("Raw token from request:", token);
-  console.log("Hashed token in DB:", this.token);
-
   // Ensure token length matches the original length (72 characters for a 36-byte hex token)
   if (token.length !== 72) {
     console.log("Token length mismatch. Rejecting.");

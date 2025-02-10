@@ -3,7 +3,7 @@ import * as yup from "yup";
 
 export const validate = (schema: any): RequestHandler => {
   return async (req, res, next) => {
-    console.log(req.body);
+    //console.log(req.body);
     if (Object.keys(req.body).length == 0) {
       res.status(422).json({ error: "Empty body is not excepted!" });
       return;
