@@ -2,13 +2,12 @@ import {
   create,
   generateForgotPasswordLink,
   grandValid,
-  isAuth,
   sendNewEmailVerificationToken,
   signIn,
   updatePassword,
   verifyEmail,
 } from "#/controllers/user";
-import { isValidPasswordResetToken } from "#/middleware/auth";
+import { isAuth, isValidPasswordResetToken } from "#/middleware/auth";
 import { validate } from "#/middleware/validator";
 import User from "#/models/user";
 
@@ -19,9 +18,7 @@ import {
   PasswordValidationSchema,
   TokenAndObjectIdValidationSchema,
 } from "#/utils/validation/validationSchemas";
-import { config } from "#/utils/variables";
 import { Response, Router } from "express";
-import { JwtPayload, verify } from "jsonwebtoken";
 
 const router = Router();
 
@@ -66,6 +63,12 @@ router.post(
   signIn
 );
 
-router.get("/is-auth", isAuth);
+router.get("/is-auth", isAuth, (req, res) => {
+  console.log("User is authenticated.");
+
+  res.json({
+    profile: req.user,
+  });
+});
 
 export default router;
