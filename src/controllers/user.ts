@@ -13,6 +13,8 @@ import EmailVerificationToken from "#/models/emailVerificationToken";
 import PasswordResetToken from "#/models/passwordResetToken";
 import crypto from "crypto";
 import { config } from "#/utils/variables";
+import { RequestWithFiles } from "#/middleware/uploadMiddleware";
+import deleteFile from "#/utils/fileHelper";
 
 export const create: RequestHandler = async (req: CreateUser, res) => {
   const { email, password, name } = req.body;
@@ -191,6 +193,7 @@ export const signIn: RequestHandler = async (req, res) => {
   const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, {
     expiresIn: "5min",
   });
+  user.tokens = [];
   user.tokens.push(token);
   await user.save();
 
@@ -202,5 +205,41 @@ export const signIn: RequestHandler = async (req, res) => {
       verified: user.verified,
     },
     token,
+  });
+};
+
+export const updateProfile: RequestHandler = async (
+  req: RequestWithFiles,
+  res
+) => {
+  const user = await User.findById(req.user.id);
+  if (!user) {
+    throw new Error(
+      "Something went wrong no user was found, although it should. Because he got through the isAuth middleware."
+    );
+  }
+
+  const filePath = req.filePath;
+
+  if (!filePath) {
+    res.status(400).json({ error: "File is required on this endpoint" });
+    return;
+  }
+
+  if (user.avatar) {
+    deleteFile(user.avatar);
+  }
+  //set the new image
+  user.avatar = filePath;
+  await user.save();
+
+  res.status(200).json({
+    profile: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      verified: user.verified,
+      avatar: user.avatar,
+    },
   });
 };

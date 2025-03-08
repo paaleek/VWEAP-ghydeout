@@ -5,6 +5,7 @@ export interface CreateUser extends Request {
     name: string;
     email: string;
     password: string;
+    avatar?: string;
   };
 }
 
